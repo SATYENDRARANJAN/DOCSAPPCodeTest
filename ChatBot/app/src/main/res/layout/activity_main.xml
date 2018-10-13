@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MainActivity">
+
+    <EditText
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="5" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_messages"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/ll_send_msg"
+        android:background="@color/colorPrimaryDark" />
+    />
+
+    <LinearLayout
+        android:id="@+id/ll_send_msg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/line"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:minHeight="45dp"
+        android:orientation="horizontal"
+        >
+
+        <EditText
+            android:id="@+id/et_send_msg"
+            android:hint="Enter message..."
+            android:layout_width="0dp"
+            android:maxLines="3"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:gravity="left"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_margin="2dp"
+            />
+
+        <Button
+            android:id="@+id/bt_send_msg"
+            android:text="SEND"
+            android:background="?attr/selectableItemBackground"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom"
+            android:gravity="center"/>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
