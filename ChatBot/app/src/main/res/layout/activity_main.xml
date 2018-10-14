@@ -6,18 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity">
 
-    <EditText
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="5" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_messages"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/line"
+        android:paddingBottom="5dp"/>
 
     <View
         android:id="@+id/line"
@@ -33,6 +30,7 @@
         android:id="@+id/ll_send_msg"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@android:color/background_light"
         app:layout_constraintTop_toBottomOf="@+id/line"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

@@ -3,7 +3,7 @@ package docsapp.com.chatbot.dao;
 public class User {
     long id  ;
     String name ;
-
+    String profileUrl;
     public long getId() {
         return id;
     }
@@ -28,5 +28,5 @@ public class User {
         this.profileUrl = profileUrl;
     }
 
-    String profileUrl;
+
 }

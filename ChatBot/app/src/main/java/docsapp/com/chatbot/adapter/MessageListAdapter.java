@@ -1,31 +1,32 @@
 package docsapp.com.chatbot.adapter;
 
 import android.content.Context;
-import android.os.UserManager;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toolbar;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import docsapp.com.chatbot.Constants;
+import docsapp.com.chatbot.DTO.MessageDTO;
+import docsapp.com.chatbot.DTO.MessageData;
 import docsapp.com.chatbot.R;
-import docsapp.com.chatbot.dao.Message;
 
 public class MessageListAdapter extends RecyclerView.Adapter{
 
     public Context mContext;
-    public List<Message> mMessageList;
+    public List<MessageData> mMessageList;
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
 
-    public MessageListAdapter(Context context, List<Message> messageList) {
+    public MessageListAdapter(Context context, List<MessageData> messageList) {
         mContext = context;
         mMessageList = messageList;
     }
@@ -35,10 +36,13 @@ public class MessageListAdapter extends RecyclerView.Adapter{
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         View view ;
         if(viewType == VIEW_TYPE_MESSAGE_RECEIVED){
+            Log.e("Satya","1");
             view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_msg_received,viewGroup,false);
             ReceivedMessageHolder holder= new ReceivedMessageHolder(view);
             return holder;
         }else if(viewType == VIEW_TYPE_MESSAGE_SENT){
+            Log.e("Satya","1.1");
+
             view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_msg_sent,viewGroup,false);
             SentMessageHolder holder = new SentMessageHolder(view);
             return  holder;
@@ -48,34 +52,43 @@ public class MessageListAdapter extends RecyclerView.Adapter{
 
     @Override
     public int getItemViewType(int position) {
-      Message message = (Message) mMessageList.get(position);
+      MessageData message = (MessageData) mMessageList.get(position);
 
-      if ((message.getSender().getId()) == 123 /*UserManager.getCurrentUser()*/){
+      if (message.isSent()/*UserManager.getCurrentUser()*/){
+          Log.e("Satya","2");
+
           return VIEW_TYPE_MESSAGE_SENT;
       }else{
+          Log.e("Satya","2.1");
+
           return VIEW_TYPE_MESSAGE_RECEIVED;
       }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
-        Message message = mMessageList.get(position);
+        MessageData message = mMessageList.get(position);
         switch (viewHolder.getItemViewType()){
             case VIEW_TYPE_MESSAGE_RECEIVED:
+                Log.e("Satya","3");
+
                 ReceivedMessageHolder  rmh = (ReceivedMessageHolder) viewHolder;
-                rmh.nameText.setText(message.getSenderName());
-                rmh.messageText.setText( message.getMsg());
+                rmh.nameText.setText(message.getChatBotName());
+                rmh.messageText.setText( message.getMessage()+ message.getEmotion());
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Date date = new Date(message.getCreatedAt());
                 rmh.timeText.setText(sdf.format(date));
                 break;
             case VIEW_TYPE_MESSAGE_SENT:
+
+                Log.e("Satya","3.1");
                 SentMessageHolder  smh = (SentMessageHolder)viewHolder;
-                smh.messageText.setText( message.getMsg());
+                smh.messageText.setText( message.getMessage());
                 sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 date = new Date(message.getCreatedAt());
                 smh.timeText.setText(sdf.format(date));
                 break;
+
         }
 
     }
