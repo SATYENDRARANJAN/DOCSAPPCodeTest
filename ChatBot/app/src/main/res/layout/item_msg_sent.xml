@@ -14,9 +14,9 @@
         android:maxWidth="200dp"
         android:padding="12dp"
         android:text="sendsendsend"
-        android:background="@drawable/layout_message_bubble"
+        android:layout_marginRight="12dp"
+        android:background="@drawable/layout_message_bubble2"
         android:textColor="#000000"
-
         android:layout_marginLeft="4dp"
         app:layout_constraintRight_toRightOf="parent"
         />
@@ -26,6 +26,7 @@
         android:layout_width="0dp"
         android:textSize="6dp"
         android:layout_height="wrap_content"
+        android:layout_marginRight="12dp"
         app:layout_constraintTop_toBottomOf="@id/tv_sent_msg"
         app:layout_constraintRight_toRightOf="parent"
         />

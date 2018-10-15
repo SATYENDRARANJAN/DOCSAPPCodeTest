@@ -100,7 +100,6 @@ public class MessageListAdapter extends RecyclerView.Adapter{
 
     private class ReceivedMessageHolder extends RecyclerView.ViewHolder{
         TextView messageText,timeText, nameText;
-        ImageView profileImage;
 
 
         public ReceivedMessageHolder(View itemView){
@@ -108,7 +107,6 @@ public class MessageListAdapter extends RecyclerView.Adapter{
             messageText = itemView.findViewById(R.id.tv_receiver_msg);
             timeText = itemView.findViewById(R.id.tv_received_time);
             nameText = itemView.findViewById(R.id.tv_receiver_name);
-            profileImage = itemView.findViewById(R.id.img_receiver);
         }
     }
 
