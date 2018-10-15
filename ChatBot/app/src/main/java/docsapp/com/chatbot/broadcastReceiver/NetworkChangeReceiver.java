@@ -3,8 +3,9 @@ package docsapp.com.chatbot.broadcastReceiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
-import docsapp.com.chatbot.Service.SendPendingMessagesService;
+import docsapp.com.chatbot.service.SendPendingMessagesService;
 import docsapp.com.chatbot.Util.NetworkUtils;
 
 public class NetworkChangeReceiver extends BroadcastReceiver {
@@ -18,6 +19,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         if (action.equals("android.net.conn.CONNECTIVITY_CHANGE")) {
             if (NetworkUtils.isNetworkConnected(context)) {
+                Log.e("BR1","net connected");
                 Intent i = new Intent(context, SendPendingMessagesService.class);
                 i.setAction("com.docsapp.UPLOAD");
                 context.startService(i);

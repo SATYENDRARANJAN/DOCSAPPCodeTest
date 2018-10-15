@@ -1,10 +1,16 @@
-package docsapp.com.chatbot.Service;
+package docsapp.com.chatbot.service;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.Context;
+import android.os.Parcelable;
+import android.support.v4.content.LocalBroadcastManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import docsapp.com.chatbot.DBHandler.MessageDbHelper;
+import docsapp.com.chatbot.DTO.MessageData;
+import docsapp.com.chatbot.Presenter.MessagePresenter;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -13,7 +19,9 @@ import docsapp.com.chatbot.DBHandler.MessageDbHelper;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class SendPendingMessagesService extends IntentService {
+public class SendPendingMessagesService extends IntentService  {
+
+    MessagePresenter presenter;
 
     private static final String ACTION_UPLOAD = "com.docsapp.UPLOAD";
 
@@ -22,15 +30,17 @@ public class SendPendingMessagesService extends IntentService {
     }
 
     private static MessageDbHelper dbHelper;
+    static List<MessageData> list;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        dbHelper = new MessageDbHelper(this);
+        dbHelper = MessageDbHelper.getInstance(this);
     }
 
-    public static void startActionUpload() {
-            dbHelper.triggerPendingApisAndShowResponse();
+    public  void startActionUpload() {
+         list =dbHelper.getMessageDataListNotUploaded();
+         sendMessageToActivity();
     }
 
     @Override
@@ -43,21 +53,10 @@ public class SendPendingMessagesService extends IntentService {
         }
     }
 
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionFoo(String param1, String param2) {
-        // TODO: Handle action Foo
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
+    //SERVICE ACTIVITY COMMUNICATION
+    private void sendMessageToActivity() {
+        Intent intent = new Intent(ACTION_UPLOAD);
+        intent.putParcelableArrayListExtra("msg_list",  (ArrayList<? extends Parcelable>)list);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 }

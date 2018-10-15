@@ -1,8 +1,11 @@
 package docsapp.com.chatbot.DTO;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
-public class MessageData {
+public class MessageData implements Parcelable {
 
     @SerializedName("chatBotName")
     String chatBotName;
@@ -27,11 +30,50 @@ public class MessageData {
     @SerializedName("createdAt")
     long createdAt;
 
+    @SerializedName("isUploaded")
+    boolean isUploaded;
+
     @SerializedName("sent")
     boolean isSent;
 
+    public MessageData(Parcel in) {
+        chatBotName = in.readString();
+        chatBotID = in.readInt();
+        message = in.readString();
+        emotion = in.readString();
+        senderID = in.readInt();
+        senderName = in.readString();
+        createdAt = in.readLong();
+        isUploaded = in.readByte() != 0;
+        isSent = in.readByte() != 0;
+    }
+
+    public static final Creator<MessageData> CREATOR = new Creator<MessageData>() {
+        @Override
+        public MessageData createFromParcel(Parcel in) {
+            return new MessageData(in);
+        }
+
+        @Override
+        public MessageData[] newArray(int size) {
+            return new MessageData[size];
+        }
+    };
+
+    public MessageData() {
+
+    }
+
     public boolean isSent() {
         return isSent;
+    }
+
+    public boolean isUploaded() {
+        return isUploaded;
+    }
+
+    public void setUploaded(boolean uploaded) {
+        isUploaded = uploaded;
     }
 
     public void setSent(boolean sent) {
@@ -95,4 +137,21 @@ public class MessageData {
         this.emotion = emotion;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(chatBotName);
+        dest.writeInt(chatBotID);
+        dest.writeString(message);
+        dest.writeString(emotion);
+        dest.writeInt(senderID);
+        dest.writeString(senderName);
+        dest.writeLong(createdAt);
+        dest.writeByte((byte) (isUploaded ? 1 : 0));
+        dest.writeByte((byte) (isSent ? 1 : 0));
+    }
 }

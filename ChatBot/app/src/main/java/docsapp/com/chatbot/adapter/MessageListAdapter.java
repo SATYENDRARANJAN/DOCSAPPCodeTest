@@ -25,6 +25,7 @@ public class MessageListAdapter extends RecyclerView.Adapter{
     public List<MessageData> mMessageList;
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
+    private static final int VIEW_TYPE_MESSAGE_SENT_OFFLINE = 3;
 
     public MessageListAdapter(Context context, List<MessageData> messageList) {
         mContext = context;
@@ -36,17 +37,18 @@ public class MessageListAdapter extends RecyclerView.Adapter{
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         View view ;
         if(viewType == VIEW_TYPE_MESSAGE_RECEIVED){
-            Log.e("Satya","1");
             view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_msg_received,viewGroup,false);
             ReceivedMessageHolder holder= new ReceivedMessageHolder(view);
             return holder;
         }else if(viewType == VIEW_TYPE_MESSAGE_SENT){
-            Log.e("Satya","1.1");
-
             view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_msg_sent,viewGroup,false);
             SentMessageHolder holder = new SentMessageHolder(view);
             return  holder;
-        }
+        }/*else if(viewType == VIEW_TYPE_MESSAGE_SENT_OFFLINE){
+            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_msg_sent,viewGroup,false);
+            SentMessageHolder holder = new SentMessageHolder(view);
+            return  holder;
+        }*/
         return null;
     }
 
@@ -56,11 +58,10 @@ public class MessageListAdapter extends RecyclerView.Adapter{
 
       if (message.isSent()/*UserManager.getCurrentUser()*/){
           Log.e("Satya","2");
-
+            /*if(!message.isUploaded())
+                return VIEW_TYPE_MESSAGE_SENT_OFFLINE;*/
           return VIEW_TYPE_MESSAGE_SENT;
       }else{
-          Log.e("Satya","2.1");
-
           return VIEW_TYPE_MESSAGE_RECEIVED;
       }
     }
@@ -70,7 +71,6 @@ public class MessageListAdapter extends RecyclerView.Adapter{
         MessageData message = mMessageList.get(position);
         switch (viewHolder.getItemViewType()){
             case VIEW_TYPE_MESSAGE_RECEIVED:
-                Log.e("Satya","3");
 
                 ReceivedMessageHolder  rmh = (ReceivedMessageHolder) viewHolder;
                 rmh.nameText.setText(message.getChatBotName());
@@ -81,7 +81,6 @@ public class MessageListAdapter extends RecyclerView.Adapter{
                 break;
             case VIEW_TYPE_MESSAGE_SENT:
 
-                Log.e("Satya","3.1");
                 SentMessageHolder  smh = (SentMessageHolder)viewHolder;
                 smh.messageText.setText( message.getMessage());
                 sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

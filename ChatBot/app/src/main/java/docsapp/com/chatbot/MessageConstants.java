@@ -10,4 +10,5 @@ public class MessageConstants {
     public static final String KEY_SENDER_NAME = "senderName";
     public static final String KEY_IS_SENT = "isSent";
     public static final String KEY_CREATED_AT ="createdAt";
+    public static final String KEY_IS_UPLOADED = "isUploaded";
 }

@@ -1,7 +1,17 @@
 package docsapp.com.chatbot.activities;
 
-import android.app.Activity;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +32,11 @@ import docsapp.com.chatbot.Constants;
 import docsapp.com.chatbot.DBHandler.MessageDbHelper;
 import docsapp.com.chatbot.DTO.MessageDTO;
 import docsapp.com.chatbot.DTO.MessageData;
+import docsapp.com.chatbot.MessageJobService;
 import docsapp.com.chatbot.Presenter.MessagePresenter;
 import docsapp.com.chatbot.R;
+import docsapp.com.chatbot.service.SendPendingMessagesService;
+import docsapp.com.chatbot.Util.NetworkUtils;
 import docsapp.com.chatbot.Util.OnLoadCompletedListener;
 import docsapp.com.chatbot.Util.Utils;
 import docsapp.com.chatbot.View.MessageView;
@@ -32,7 +45,7 @@ import docsapp.com.chatbot.adapter.MessageListAdapter;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener,
         MessageView, OnLoadCompletedListener {
 
-
+    private static final String ACTION_UPLOAD = "com.docsapp.UPLOAD";
     private MessageListAdapter adapter;
     private RecyclerView recyclerView;
     Button btn_send;
@@ -40,18 +53,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     MessagePresenter presenter;
     ArrayList<MessageData> messageList = new ArrayList<>();
     MessageDbHelper dbHelper;
+    BroadcastReceiver br;
+    BroadcastReceiver networkBR;
+    List<MessageData> msgListNotUploaded = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.rv_messages);
-        dbHelper = new MessageDbHelper(this);
+        dbHelper = MessageDbHelper.getInstance(this);
 
         //Create a LinearLayout object
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayout.VERTICAL);
         linearLayoutManager.setStackFromEnd(true);
+
         //set it on recyclerVeiw
         recyclerView.setLayoutManager(linearLayoutManager);
         //Create a new  Adapter
@@ -77,11 +95,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         presenter = new MessagePresenter(this);
 
+
+        //registering local br . triggers when app is in foreground .
+        br= new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d("BR1","Inside BR");
+                msgListNotUploaded = intent.getParcelableArrayListExtra("msg_list");
+                sendMessagesToChatBot(context,msgListNotUploaded);
+                Toast.makeText(context, "Offline chats updated. ", Toast.LENGTH_LONG).show();
+            }
+        };
+
+        //registering network br
+        networkBR = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals("android.net.conn.CONNECTIVITY_CHANGE")) {
+                    if (NetworkUtils.isNetworkConnected(context)) {
+                        Log.e("BR1","net connected");
+                        Intent i = new Intent(context, SendPendingMessagesService.class);
+                        i.setAction("com.docsapp.UPLOAD");
+                        context.startService(i);
+                        Toast.makeText(context, "Conn connected", Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        Toast.makeText(context, "Conn disconnected", Toast.LENGTH_LONG).show();
+
+                    }
+                }
+            }
+        };
+
+        
+        //JobScehculer for nougat and oreo
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            scheduleJob();
+        }
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver(br, new IntentFilter(ACTION_UPLOAD));
+        //this.registerReceiver(br,new IntentFilter(ACTION_UPLOAD));
+        this.registerReceiver(networkBR, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void scheduleJob() {
+        JobInfo myJob = new JobInfo.Builder(0, new ComponentName(this, MessageJobService.class))
+                .setMinimumLatency(3000)
+                .setOverrideDeadline(2000)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setPersisted(true)
+                .build();
+
+        JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        jobScheduler.schedule(myJob);
+    }
+
+    private void sendMessagesToChatBot(Context context,List<MessageData> msgListNotUploaded) {
+        if(msgListNotUploaded!=null)
+        for(MessageData m : msgListNotUploaded) {
+            Log.d("BR1","Inside BR2");
+            presenter.getMessageResponse(context, m.getMessage());
+        }
+        dbHelper.updateIsUploadedStatusOfOfflineMessage();
+
     }
 
     private void initMessageList() {
         Utils.getMsgFromDB(this, dbHelper);
     }
+
 
     private void sendMessageandShowResponse() {
         String send_msg = et_msg_sent.getText().toString();
@@ -91,8 +180,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             sent_msg_data.setCreatedAt(Utils.getCurrentTimeStamp());
             sent_msg_data.setMessage(send_msg);
             sent_msg_data.setSent(true);
-            //add the sent message to arrayList
 
+            if(NetworkUtils.isNetworkConnected(this))
+                sent_msg_data.setUploaded(true);
+            else
+                sent_msg_data.setUploaded(false);
+
+            //add the sent message to arrayList
             messageList.add(sent_msg_data);
             adapter.notifyDataSetChanged();
 
@@ -159,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.bt_send_msg:
                 sendMessageandShowResponse();
                 break;
-
         }
     }
 
@@ -169,5 +262,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //progress.setVisibility(View.GONE);
         adapter.notifyDataSetChanged();
         recyclerView.scrollToPosition(messageList.size() - 1);
+    }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(br != null) {
+            //unregisterReceiver(br);
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(br);
+        }
+        if(networkBR!=null){
+            unregisterReceiver(networkBR);
+        }
     }
 }
